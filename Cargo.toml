@@ -1,6 +1,6 @@
 [package]
 name = "mubo"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Adrian Tombu <adrian@otso.fr>"]
 keywords = ["generator", "static", "shortener", "url"]
@@ -13,4 +13,5 @@ include = ["/src", "LICENSE.md", "README.md"]
 [dependencies]
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
+tinytemplate = "1.2"
 toml = "0.5"

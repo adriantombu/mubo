@@ -1,9 +1,12 @@
+mod templates;
+
+use crate::templates::{LINK_INDEX, LINK_TEMPLATE};
 use anyhow::{Context, Result};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
+use tinytemplate::TinyTemplate;
 
-// TODO: readme
 // TODO: add some logs
 // TODO: add some tests
 // TODO: clean this shit
@@ -17,25 +20,17 @@ fn main() -> Result<()> {
     let build_path = Path::new("r");
     prepare_build_directory(build_path)?;
 
+    let mut tt = TinyTemplate::new();
+    tt.add_template("link", LINK_TEMPLATE)
+        .context("Failed to load the template LINK_TEMPLATE")?;
+    tt.add_template("index", LINK_INDEX)
+        .context("Failed to load the template LINK_INDEX")?;
+
     values.links.iter().try_for_each(|link| -> Result<()> {
-        let html = format!(
-            r#"
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <link rel="canonical" href="{}" />
-                <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-                <meta http-equiv="refresh" content="0;url={}" />
-            </head>
-            <body>
-                <h1>Redirecting...</h1>
-                  <a href="{}">Click here if you are not redirected.</a>
-                  <script>location.href="{}"</script>
-            </body>
-        </html>
-        "#,
-            link.url, link.url, link.url, link.url
-        );
+        let context = LinkContext {
+            url: link.url.clone(),
+        };
+        let html = tt.render("link", &context)?;
 
         let link_path = format!("{}/{}", build_path.display(), link.key);
         fs::create_dir_all(&link_path)
@@ -46,6 +41,9 @@ fn main() -> Result<()> {
 
         Ok(())
     })?;
+
+    let html = tt.render("index", &values)?;
+    fs::write("./index.html", html.as_bytes()).context("Failed to write to index.html")?;
 
     Ok(())
 }
@@ -60,6 +58,10 @@ fn prepare_build_directory(build_path: &Path) -> Result<()> {
         })?;
     }
 
+    if Path::new("./index.html").exists() {
+        fs::remove_file("./index.html").context("Failed to delete file at path ./index.html")?;
+    }
+
     fs::create_dir_all(build_path).with_context(|| {
         format!(
             "Failed to create the directory at path {}",
@@ -68,13 +70,18 @@ fn prepare_build_directory(build_path: &Path) -> Result<()> {
     })
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Links {
     pub links: Vec<Link>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Link {
     pub key: String,
+    pub url: String,
+}
+
+#[derive(Serialize)]
+pub struct LinkContext {
     pub url: String,
 }
