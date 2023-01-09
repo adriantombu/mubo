@@ -1,0 +1,13 @@
+[package]
+name = "mubo"
+version = "0.1.0"
+edition = "2021"
+authors = ["Adrian Tombu <adrian@otso.fr>"]
+keywords = ["generator", "static", "shortener", "url"]
+categories = ["command-line-utilities", "value-formatting", "web-programming"]
+description = "A static url shortener generator"
+license = "MIT"
+repository = "https://github.com/adriantombu/mubo"
+include = ["/src", "LICENSE.md", "README.md"]
+
+[dependencies]
