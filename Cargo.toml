@@ -11,3 +11,5 @@ repository = "https://github.com/adriantombu/mubo"
 include = ["/src", "LICENSE.md", "README.md"]
 
 [dependencies]
+serde = { version = "1", features = ["derive"] }
+toml = "0.5"
