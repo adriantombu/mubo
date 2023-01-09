@@ -1,21 +1,23 @@
+use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::fs;
 use std::path::Path;
 
-// TODO: remove unwrap
 // TODO: readme
 // TODO: add some logs
 // TODO: add some tests
+// TODO: clean this shit
 // TODO: add to homebrew
-fn main() {
+fn main() -> Result<()> {
     let path = Path::new("config.toml");
-    let data = fs::read_to_string(path).unwrap();
-    let values = toml::from_str::<Links>(&data).unwrap();
+    let data = fs::read_to_string(path).context("Failed to read the config.toml file")?;
+    let values =
+        toml::from_str::<Links>(&data).context("Failed to deserialize the config.toml file")?;
 
     let build_path = Path::new("r");
-    prepare_build_directory(build_path);
+    prepare_build_directory(build_path)?;
 
-    values.links.iter().for_each(|link| {
+    values.links.iter().try_for_each(|link| -> Result<()> {
         let html = format!(
             r#"
         <!DOCTYPE html>
@@ -36,17 +38,34 @@ fn main() {
         );
 
         let link_path = format!("{}/{}", build_path.display(), link.key);
-        fs::create_dir_all(&link_path).unwrap();
-        fs::write(format!("{}/index.html", link_path), html.as_bytes()).unwrap();
-    })
+        fs::create_dir_all(&link_path)
+            .with_context(|| format!("Failed to create the directory at path {}", link_path))?;
+        fs::write(format!("{}/index.html", link_path), html.as_bytes()).with_context(|| {
+            format!("Failed to create the file at path {}/index.html", link_path)
+        })?;
+
+        Ok(())
+    })?;
+
+    Ok(())
 }
 
-fn prepare_build_directory(build_path: &Path) {
+fn prepare_build_directory(build_path: &Path) -> Result<()> {
     if Path::new(build_path).exists() {
-        fs::remove_dir_all(build_path).unwrap();
+        fs::remove_dir_all(build_path).with_context(|| {
+            format!(
+                "Failed to delete the directory at path {}",
+                build_path.display()
+            )
+        })?;
     }
 
-    fs::create_dir_all(build_path).unwrap()
+    fs::create_dir_all(build_path).with_context(|| {
+        format!(
+            "Failed to create the directory at path {}",
+            build_path.display()
+        )
+    })
 }
 
 #[derive(Deserialize, Debug)]

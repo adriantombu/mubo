@@ -1,6 +1,6 @@
 [package]
 name = "mubo"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Adrian Tombu <adrian@otso.fr>"]
 keywords = ["generator", "static", "shortener", "url"]
@@ -11,5 +11,6 @@ repository = "https://github.com/adriantombu/mubo"
 include = ["/src", "LICENSE.md", "README.md"]
 
 [dependencies]
+anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 toml = "0.5"
