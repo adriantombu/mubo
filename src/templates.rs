@@ -1,4 +1,12 @@
-pub static LINK_TEMPLATE: &str = r#"
+use anyhow::{Context, Result};
+use serde::Serialize;
+use std::collections::HashMap;
+use tinytemplate::TinyTemplate;
+
+pub struct Template<'a>(TinyTemplate<'a>);
+
+impl Template<'_> {
+    const LINK_TEMPLATE: &'_ str = r#"
 <!DOCTYPE html>
 <html>
     <head>
@@ -15,7 +23,7 @@ pub static LINK_TEMPLATE: &str = r#"
 </html>
 "#;
 
-pub static LINK_INDEX: &str = r#"
+    const LINK_INDEX: &'_ str = r#"
 <!doctype html>
 <html lang="en">
     <head>
@@ -29,9 +37,28 @@ pub static LINK_INDEX: &str = r#"
     <body>
         <ul>
             {{for link in links}}
-                <li><a href="./r/{link.key}/">{link.url}</a></li>
+                <li><a href="./r/{link.key}/">/r/{link.key}/</a></li>
             {{endfor}}
         </ul>
     </body>
 </html>
 "#;
+
+    pub fn new() -> Result<Self> {
+        let mut tt = TinyTemplate::new();
+        tt.add_template("link", Self::LINK_TEMPLATE)
+            .context("Failed to load the template LINK_TEMPLATE")?;
+        tt.add_template("index", Self::LINK_INDEX)
+            .context("Failed to load the template LINK_INDEX")?;
+
+        Ok(Template(tt))
+    }
+
+    pub fn render<T, U>(&self, template: &str, context: &HashMap<T, U>) -> Result<String>
+    where
+        T: Serialize,
+        U: Serialize,
+    {
+        Ok(self.0.render(template, &context)?)
+    }
+}
