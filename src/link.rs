@@ -3,12 +3,17 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(bound(deserialize = "'de: 'a"))]
 pub struct Links<'a> {
     pub links: Vec<Link<'a>>,
+}
+
+impl Links<'_> {
+    pub fn new(data: &str) -> Result<Links> {
+        toml::from_str::<Links>(data).context("Failed to deserialize the config.toml file")
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
@@ -19,13 +24,13 @@ pub struct Link<'a> {
 }
 
 impl Link<'_> {
-    pub fn render(&self, tt: &Template, build_path: &Path) -> Result<()> {
+    pub fn render(&self, tt: &Template, build_path: &str) -> Result<()> {
         let mut context = HashMap::new();
         context.insert("url", self.url);
 
         let html = tt.render("link", &context)?;
 
-        let link_path = format!("{}/{}", build_path.display(), self.key);
+        let link_path = format!("{}/{}", build_path, self.key);
         fs::create_dir_all(&link_path)
             .with_context(|| format!("Failed to create the directory at path {}", link_path))?;
 
