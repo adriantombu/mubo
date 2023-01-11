@@ -10,20 +10,18 @@ use std::fs;
 use std::path::Path;
 
 fn main() -> Result<()> {
-    let data = fs::read_to_string("config.toml").context("Failed to read the config.toml file")?;
-    let values = Links::new(&data)?;
-
     prepare_build_directory("r")?;
 
+    let data = fs::read_to_string("config.toml").context("Failed to read the config.toml file")?;
+    let values = Links::new(&data)?;
     let template = Template::new()?;
+
     values
         .links
         .iter()
         .try_for_each(|link| -> Result<()> { link.render(&template, "r") })?;
 
-    Index::render(&template, &values.links)?;
-
-    Ok(())
+    Index::render(&template, &values.links)
 }
 
 fn prepare_build_directory(build_path: &str) -> Result<()> {

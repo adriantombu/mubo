@@ -12,7 +12,7 @@ impl Index {
         context.insert("links", links);
 
         let html = tt.render("index", &context)?;
-
-        fs::write("./index.html", html.as_bytes()).context("Failed to write to index.html")
+        fs::write("./index.html", html.as_bytes()).context("Failed to write to index.html")?;
+        fs::write("./r/index.html", "").context("Failed to write to ./r/index.html")
     }
 }
