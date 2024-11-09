@@ -6,7 +6,7 @@ use tinytemplate::TinyTemplate;
 pub struct Template<'a>(TinyTemplate<'a>);
 
 impl Template<'_> {
-    const LINK_TEMPLATE: &'_ str = r#"
+    const LINK_TEMPLATE: &'static str = r#"
 <!DOCTYPE html>
 <html>
     <head>
@@ -23,7 +23,7 @@ impl Template<'_> {
 </html>
 "#;
 
-    const LINK_INDEX: &'_ str = r#"
+    const LINK_INDEX: &'static str = r#"
 <!doctype html>
 <html lang="en">
     <head>
